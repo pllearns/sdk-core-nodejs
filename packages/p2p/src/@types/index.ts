@@ -6,7 +6,7 @@ import { Server } from "net"
  * @Email:  developer@xyfindables.com
  * @Filename: index.ts
  * @Last modified by: ryanxyo
- * @Last modified time: Monday, 28th January 2019 2:03:51 pm
+ * @Last modified time: Monday, 28th January 2019 9:23:32 pm
  * @License: All Rights Reserved
  * @Copyright: Copyright XY | The Findables Company
  */
@@ -71,6 +71,7 @@ export interface IXyoPeer {
    */
   address: string
 }
+
 export interface IXyoPeerTransport {
   /**
    * Listen for connections on supplied address

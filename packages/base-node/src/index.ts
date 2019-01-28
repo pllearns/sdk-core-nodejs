@@ -4,7 +4,7 @@
  * @Email:  developer@xyfindables.com
  * @Filename: index.ts
  * @Last modified by: ryanxyo
- * @Last modified time: Thursday, 24th January 2019 11:24:14 am
+ * @Last modified time: Tuesday, 29th January 2019 10:18:56 am
  * @License: All Rights Reserved
  * @Copyright: Copyright XY | The Findables Company
  */
@@ -18,6 +18,7 @@ import { XyoPeerInteractionRouter } from '@xyo-network/peer-interaction-router'
 import { XyoBoundWitnessStandardServerInteraction, XyoBoundWitnessTakeOriginChainServerInteraction } from '@xyo-network/peer-interaction-handlers'
 import { IXyoHashProvider, getHashingProvider } from '@xyo-network/hashing'
 import { getSignerProvider } from '@xyo-network/signing.ecdsa'
+
 import {
   XyoBoundWitnessHandlerProvider,
   IXyoBoundWitnessPayloadProvider,
@@ -40,8 +41,11 @@ import {
 
 import { IXyoSerializationService } from '@xyo-network/serialization'
 import { XyoInMemoryStorageProvider } from '@xyo-network/storage'
-import { IXyoSigner } from '@xyo-network/signing'
+import { IXyoSigner, IXyoPublicKey } from '@xyo-network/signing'
 import { serializer } from '@xyo-network/serializer'
+import { IXyoNodeNetwork, XyoNodeNetwork } from '@xyo-network/node-network'
+import { IXyoP2PService, XyoP2PService, IXyoPeerDiscoveryService, XyoPeerDiscoveryService, XyoPeerTransport } from '@xyo-network/p2p'
+import { XyoError, XyoErrors } from '@xyo-network/errors'
 
 // tslint:disable-next-line:max-classes-per-file
 export class XyoBaseNode extends XyoBase {
@@ -62,6 +66,46 @@ export class XyoBaseNode extends XyoBase {
     }
 
     return false
+  }
+
+  protected async getNodeNetwork(): Promise<IXyoNodeNetwork> {
+    return this.getOrCreate(`IXyoNodeNetwork`, async () => {
+      const p2pService = await this.getP2PService()
+      return new XyoNodeNetwork(p2pService)
+    })
+  }
+
+  protected async getP2PService(): Promise<IXyoP2PService> {
+    return this.getOrCreate(`IXyoNodeNetwork`, async () => {
+      const discoveryNetwork = await this.getDiscoveryNetwork()
+      return new XyoP2PService(discoveryNetwork)
+    })
+  }
+
+  protected async getDiscoveryNetwork(): Promise<IXyoPeerDiscoveryService> {
+    return this.getOrCreate(`IXyoNodeNetwork`, async () => {
+      const discoveryPublicKey = await this.getDiscoveryNetworkPublicKey()
+      const p2pAddress = await this.getP2PAddress()
+      const peerTransport = new XyoPeerTransport(p2pAddress)
+      return new XyoPeerDiscoveryService(discoveryPublicKey.serializeHex(), p2pAddress, peerTransport)
+    })
+  }
+
+  protected async getDiscoveryNetworkPublicKey(): Promise<IXyoPublicKey> {
+    return this.getOrCreate(`DiscoveryNetworkPublicKey`, async () => {
+      const signers = await this.getSigners()
+      if (signers.length === 0) {
+        throw new XyoError('Signers must have at least item to initialize discovery service', XyoErrors.CRITICAL)
+      }
+
+      return signers[0].publicKey
+    })
+  }
+
+  protected async getP2PAddress(): Promise<string> {
+    return this.getOrCreate(`P2PAddress`, async () => {
+      return 'ip4/0.0.0.0/tcp/11500'
+    })
   }
 
   protected async getPeerConnectionDelegate(): Promise<IXyoPeerConnectionDelegate> {
