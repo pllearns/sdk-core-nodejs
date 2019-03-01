@@ -1,5 +1,5 @@
 ip: 0.0.0.0
-p2pPort: 11500
+p2pPort: 11506
 apis:
   - about
   - blockByHash
@@ -9,7 +9,7 @@ apis:
   - entities
 bootstrapNodes: []
 serverPort: 11000
-graphqlPort: 11001
+graphqlPort: 11007
 data: ./node-data
 name: archivist
 archivist:
