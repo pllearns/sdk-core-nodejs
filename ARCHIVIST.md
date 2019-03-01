@@ -8,6 +8,10 @@ they may implement the component however they wish. This application supports us
 backs the archivist repository, LevelDb to persist origin-chain data specific to this node, and TCP as the transport
 layer for doing bound-witness interactions between the Archivist and other Bridges.
 
+# Prerequisites
+
+- You must have [docker](https://www.docker.com/get-started) installled and running
+
 # Getting Started
 
 ##### Clone the repository 
